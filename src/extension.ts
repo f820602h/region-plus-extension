@@ -20,9 +20,11 @@ import {
   defineExtension,
   useActiveTextEditor,
   useTextEditorSelection,
+  watch,
   watchEffect,
   useCommand,
 } from "reactive-vscode";
+import { registerDiagnostics, updateDiagnostics, clearDiagnostics } from "./diagnostics";
 
 function getTextLine(fullText: string, regex: RegExp): number[] {
   const result: number[] = [];
@@ -55,6 +57,8 @@ export = defineExtension((context) => {
     overviewRulerColor: blockColor.value,
     overviewRulerLane: OverviewRulerLane.Full,
   });
+
+  registerDiagnostics(context);
 
   const activeTextEditor = useActiveTextEditor();
 
@@ -175,5 +179,21 @@ export = defineExtension((context) => {
     updateRegionStartLineDecorations();
     updateRegionBlockDecorations();
     treeDataProvider.refresh();
+
+    clearDiagnostics();
+    if (!activeTextEditor.value) return;
+    const editor = activeTextEditor.value;
+    regionStartLines.value.forEach((line) => {
+      if (!regionRangeSet.value.some(([s]) => s === line)) {
+        const startLine = editor.document?.lineAt?.(line);
+        updateDiagnostics(editor.document, new Range(startLine.range.start, startLine.range.end));
+      }
+    });
+    regionEndLines.value.forEach((line) => {
+      if (!regionRangeSet.value.some(([, e]) => e === line)) {
+        const endLine = editor.document?.lineAt?.(line);
+        updateDiagnostics(editor.document, new Range(endLine.range.start, endLine.range.end));
+      }
+    });
   });
 });
