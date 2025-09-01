@@ -16,6 +16,12 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "region-plus.jump",
+        "title": "jump to region by line number"
+      }
+    ],
     "configuration": {
       "title": "region-plus",
       "properties": {
@@ -31,6 +37,14 @@
         }
       }
     },
+    "views": {
+      "explorer": [
+        {
+          "icon": "",
+          "id": "region-block",
+          "name": "region-block"
+        }
+      ]
     }
   },
   "scripts": {

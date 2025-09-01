@@ -6,6 +6,13 @@ import {
   window,
   Range,
   OverviewRulerLane,
+  Event,
+  EventEmitter,
+  TreeDataProvider,
+  TreeItem,
+  TreeItemCollapsibleState,
+  Selection,
+  TextEditorRevealType,
 } from "vscode";
 import {
   defineConfigs,
@@ -14,6 +21,7 @@ import {
   useActiveTextEditor,
   useTextEditorSelection,
   watchEffect,
+  useCommand,
 } from "reactive-vscode";
 
 function getTextLine(fullText: string, regex: RegExp): number[] {
@@ -116,10 +124,56 @@ export = defineExtension((context) => {
     )
   );
 
+  useCommand("region-plus.jump", (range: Range) => {
+    if (!activeTextEditor.value) return;
+    const editor = activeTextEditor.value;
+    editor.selection = new Selection(range.start, range.start);
+    editor.revealRange(range, TextEditorRevealType.InCenter);
+  });
 
+  class MyItem extends TreeItem {
+    children: MyItem[] = [];
+
+    constructor(label: string, range: Range) {
+      super(label, TreeItemCollapsibleState.None);
+      this.command = { command: "region-plus.jump", title: "", arguments: [range] };
+    }
+  }
+
+  class MyTreeDataProvider implements TreeDataProvider<MyItem> {
+    private _onDidChangeTreeData: EventEmitter<MyItem | undefined | void> = new EventEmitter<
+      MyItem | undefined | void
+    >();
+    readonly onDidChangeTreeData: Event<MyItem | undefined | void> = this._onDidChangeTreeData.event;
+
+    refresh(): void {
+      this._onDidChangeTreeData.fire();
+    }
+
+    getTreeItem(element: MyItem): TreeItem {
+      return element;
+    }
+
+    getChildren(element: MyItem): MyItem[] {
+      if (element === undefined) {
+        if (!activeTextEditor.value) return [];
+        return regionDecorationRanges.value.map((rangeObj) => {
+          const line = activeTextEditor.value?.document.lineAt(rangeObj.line.start.line);
+          const name = line?.text.replace(/\/\/\s*#region\s*/, "") || "";
+          return new MyItem(name, rangeObj.line);
+        });
+      } else {
+        return element.children;
+      }
+    }
+  }
+
+  const treeDataProvider = new MyTreeDataProvider();
+  context.subscriptions.push(window.registerTreeDataProvider("region-block", treeDataProvider));
 
   watchEffect(() => {
     updateRegionStartLineDecorations();
     updateRegionBlockDecorations();
+    treeDataProvider.refresh();
   });
 });
