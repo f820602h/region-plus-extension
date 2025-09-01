@@ -2,7 +2,7 @@
   "publisher": "max.lee",
   "name": "region-plus",
   "displayName": "Region Plus",
-  "description": "Translations inline, eliminating the need to switch files during development.",
+  "description": "Enhanced code region management with visual highlighting, smart navigation, and folding for JavaScript and Vue.js development.",
   "type": "module",
   "version": "1.0.0",
   "categories": [
