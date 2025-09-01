@@ -17,19 +17,20 @@
   ],
   "contributes": {
     "configuration": {
-      "title": "vue-marker",
+      "title": "region-plus",
       "properties": {
-        "vue-marker.firstLineColor": {
+        "region-plus.firstLineColor": {
           "type": "string",
           "default": "rgba(43, 106, 75, 0.3)",
           "description": "The background color of the first line of the region block."
         },
-        "vue-marker.blockColor": {
+        "region-plus.blockColor": {
           "type": "string",
-          "default": "rgba(43, 106, 75, 0.15)",
+          "default": "rgba(43, 106, 75, 0.1)",
           "description": "The background color of the region block when the cursor is inside the block."
         }
       }
+    },
     }
   },
   "scripts": {
