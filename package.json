@@ -2,13 +2,14 @@
   "publisher": "max.lee",
   "name": "region-plus",
   "displayName": "Region Plus",
+  "description": "Visualize and manage code regions in your files with ease.",
   "type": "module",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
   "categories": [
     "Other"
   ],
   "main": "./dist/extension.cjs",
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.89.0"
   },
