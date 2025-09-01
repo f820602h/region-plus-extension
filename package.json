@@ -2,7 +2,7 @@
   "publisher": "max.lee",
   "name": "region-plus",
   "displayName": "Region Plus",
-  "description": "Visualize and manage code regions in your files with ease.",
+  "description": "Translations inline, eliminating the need to switch files during development.",
   "type": "module",
   "version": "1.0.0",
   "categories": [

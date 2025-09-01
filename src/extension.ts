@@ -20,7 +20,6 @@ import {
   defineExtension,
   useActiveTextEditor,
   useTextEditorSelection,
-  watch,
   watchEffect,
   useCommand,
 } from "reactive-vscode";
