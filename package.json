@@ -16,19 +16,18 @@
     "onStartupFinished"
   ],
   "contributes": {
-    "commands": [
-      {
-        "command": "vue-marker.helloWorld",
-        "title": "Hello World"
-      }
-    ],
     "configuration": {
       "title": "vue-marker",
       "properties": {
-        "vue-marker.message": {
+        "vue-marker.firstLineColor": {
           "type": "string",
-          "default": "Hello World",
-          "description": "The message to show in the notification"
+          "default": "rgba(43, 106, 75, 0.3)",
+          "description": "The background color of the first line of the region block."
+        },
+        "vue-marker.blockColor": {
+          "type": "string",
+          "default": "rgba(43, 106, 75, 0.15)",
+          "description": "The background color of the region block when the cursor is inside the block."
         }
       }
     }
@@ -42,8 +41,12 @@
   "devDependencies": {
     "@types/node": "22.x",
     "@types/vscode": "^1.101.0",
+    "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
     "reactive-vscode": "^0.3.1",
     "tsdown": "^0.12.8",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.35.1"
   }
 }
