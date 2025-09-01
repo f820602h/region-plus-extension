@@ -1,31 +1,32 @@
-# region-plus
+# Region Plus
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/max.lee.region-plus)](https://marketplace.visualstudio.com/items?itemName=max.lee.region-plus) [![Installs](https://img.shields.io/visual-studio-marketplace/i/max.lee.region-plus)](https://marketplace.visualstudio.com/items?itemName=max.lee.region-plus) [![Reactive VSCode](https://img.shields.io/badge/Reactive-VSCode-%23007ACC?style=flat&labelColor=%23229863)](https://kermanx.github.io/reactive-vscode/)
+一個專為 JavaScript 和 Vue.js 開發者設計的 VS Code 擴展，提供增強的 region 區塊管理功能。
 
-A VS Code extension created with [Reactive VS Code](https://kermanx.github.io/reactive-vscode/).
+## ✨ 功能特性
 
-## Directory Structure
+- 🎨 **視覺化區塊標記** - 為 `#region` / `#endregion` 區塊提供顏色高亮顯示
+- 📁 **程式碼折疊** - 支援 JavaScript 和 Vue 檔案的 region 區塊折疊
+- 🚀 **快速導航** - 透過側邊欄樹狀視圖快速跳轉到指定區塊
+- ⚠️ **語法檢查** - 自動檢測未完整配對的 region 區塊並提供警告
+- 🎛️ **自訂配色** - 可調整區塊標記和背景顏色
+- 🖱️ **智慧高亮** - 當游標在區塊內時自動高亮整個區塊範圍
 
-- `package.json` - this is the manifest file in which you declare your extension and command.
-- `src/extension.ts` - this is the main file where you write your extension.
+## 🚀 使用方式
 
-## Get started
+### 快速導航
 
-- Open this repository in VS Code.
-- Run `pnpm install` to install the dependencies.
-- Run `pnpm dev` to compile the extension and watch for changes.
-- Press `F5` to open a new window with your extension loaded.
-- Run your command from the command palette by pressing (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac) and typing `Hello World`.
-- Set breakpoints in your code inside `src/extension.ts` to debug your extension.
-- Find output from your extension in the debug console.
+1. 在側邊欄的「Explorer」中找到「region-block」面板
+2. 點擊任意區塊名稱即可快速跳轉到對應位置
+3. 或使用命令面板 (`Ctrl+Shift+P`) 執行「jump to region by line number」命令
 
-## Make changes
+## ⚙️ 設定選項
 
-- You can relaunch the extension from the debug toolbar after changing code in `src/extension.ts`.
-- You can also reload (`Ctrl+R` or `Cmd+R` on Mac) the VS Code window with your extension to load your changes.
+在 VS Code 設定中調整以下選項：
 
-## Go further
+- `region-plus.firstLineColor`: 設定 region 起始行的背景顏色 (預設: `rgba(43, 106, 75, 0.3)`)
+- `region-plus.blockColor`: 設定游標位於區塊內時的背景顏色 (預設: `rgba(43, 106, 75, 0.1)`)
 
-- [Follow UX guidelines](https://code.visualstudio.com/api/ux-guidelines/overview) to create extensions that seamlessly integrate with VS Code's native interface and patterns.
-- [Publish your extension](https://code.visualstudio.com/api/working-with-extensions/publishing-extension) on the VS Code extension marketplace.
-- Automate builds by setting up [Continuous Integration](https://code.visualstudio.com/api/working-with-extensions/continuous-integration).
+## 🎯 支援語言
+
+- JavaScript (.js)
+- Vue.js (.vue)
