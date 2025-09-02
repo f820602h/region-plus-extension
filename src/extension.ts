@@ -19,7 +19,6 @@ import {
   defineExtension,
   useActiveTextEditor,
   useTextEditorSelection,
-  watchEffect,
   useCommand,
   ref,
   useDocumentText,
@@ -54,12 +53,12 @@ export = defineExtension((context) => {
   const editorSelection = useTextEditorSelection(activeTextEditor);
 
   const regionStartLines = computed<number[]>(() => {
-    if (!activeTextEditor.value) return [];
-    return getTextLine(textDocument.value || "", new RegExp(/\/\/\s*#region/, "g"));
+    if (!textDocument.value) return [];
+    return getTextLine(textDocument.value, new RegExp(/\/\/\s*#region/, "g"));
   });
   const regionEndLines = computed<number[]>(() => {
-    if (!activeTextEditor.value) return [];
-    return getTextLine(textDocument.value || "", new RegExp(/\/\/\s*#endregion/, "g"));
+    if (!textDocument.value) return [];
+    return getTextLine(textDocument.value, new RegExp(/\/\/\s*#endregion/, "g"));
   });
 
   const regionRangeSet = computed(() => {
@@ -86,7 +85,7 @@ export = defineExtension((context) => {
     });
   });
 
-  useActiveEditorDecorations(
+  const { update: updateFirstLineDecorations } = useActiveEditorDecorations(
     {
       isWholeLine: true,
       backgroundColor: firstLineColor.value,
@@ -96,7 +95,7 @@ export = defineExtension((context) => {
     () => regionDecorationRanges.value.map((range) => range.line)
   );
 
-  useActiveEditorDecorations(
+  const { update: updateBlockDecorations } = useActiveEditorDecorations(
     {
       isWholeLine: true,
       backgroundColor: blockColor.value,
@@ -165,10 +164,12 @@ export = defineExtension((context) => {
   const treeDataProvider = new MyTreeDataProvider();
   context.subscriptions.push(window.registerTreeDataProvider("region-block", treeDataProvider));
 
-  watchEffect(() => {
+  function update() {
+    clearDiagnostics();
+    updateFirstLineDecorations();
+    updateBlockDecorations();
     treeDataProvider.refresh();
 
-    clearDiagnostics();
     if (!activeTextEditor.value) return;
     const editor = activeTextEditor.value;
     regionStartLines.value.forEach((line) => {
@@ -183,13 +184,21 @@ export = defineExtension((context) => {
         updateDiagnostics(editor.document, new Range(endLine.range.start, endLine.range.end));
       }
     });
-  });
+  }
 
   context.subscriptions.push(
     workspace.onDidChangeTextDocument((event) => {
       if (event.document === activeTextEditor.value?.document) {
         activeDocument.value = event.document;
+        update();
       }
+    })
+  );
+
+  context.subscriptions.push(
+    window.onDidChangeActiveTextEditor((editor) => {
+      activeDocument.value = editor?.document;
+      update();
     })
   );
 });
