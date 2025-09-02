@@ -1,8 +1,6 @@
 import {
-  type ProviderResult,
   FoldingRange,
   FoldingRangeKind,
-  languages,
   window,
   Range,
   OverviewRulerLane,
@@ -13,6 +11,7 @@ import {
   TreeItemCollapsibleState,
   Selection,
   TextEditorRevealType,
+  workspace,
 } from "vscode";
 import {
   defineConfigs,
@@ -22,6 +21,10 @@ import {
   useTextEditorSelection,
   watchEffect,
   useCommand,
+  ref,
+  useDocumentText,
+  useActiveEditorDecorations,
+  useFoldingRangeProvider,
 } from "reactive-vscode";
 import { registerDiagnostics, updateDiagnostics, clearDiagnostics } from "./diagnostics";
 
@@ -43,31 +46,20 @@ export = defineExtension((context) => {
     blockColor: "string",
   });
 
-  const regionStartLineDecoration = window.createTextEditorDecorationType({
-    isWholeLine: true,
-    backgroundColor: firstLineColor.value,
-    overviewRulerColor: firstLineColor.value,
-    overviewRulerLane: OverviewRulerLane.Full,
-  });
-
-  const regionBlockDecoration = window.createTextEditorDecorationType({
-    isWholeLine: true,
-    backgroundColor: blockColor.value,
-    overviewRulerColor: blockColor.value,
-    overviewRulerLane: OverviewRulerLane.Full,
-  });
-
   registerDiagnostics(context);
 
   const activeTextEditor = useActiveTextEditor();
+  const activeDocument = ref(activeTextEditor.value?.document);
+  const textDocument = useDocumentText(activeDocument);
+  const editorSelection = useTextEditorSelection(activeTextEditor);
 
   const regionStartLines = computed<number[]>(() => {
     if (!activeTextEditor.value) return [];
-    return getTextLine(activeTextEditor.value.document.getText(), new RegExp(/\/\/\s*#region/, "g"));
+    return getTextLine(textDocument.value || "", new RegExp(/\/\/\s*#region/, "g"));
   });
   const regionEndLines = computed<number[]>(() => {
     if (!activeTextEditor.value) return [];
-    return getTextLine(activeTextEditor.value.document.getText(), new RegExp(/\/\/\s*#endregion/, "g"));
+    return getTextLine(textDocument.value || "", new RegExp(/\/\/\s*#endregion/, "g"));
   });
 
   const regionRangeSet = computed(() => {
@@ -94,37 +86,36 @@ export = defineExtension((context) => {
     });
   });
 
-  function updateRegionStartLineDecorations() {
-    if (!activeTextEditor.value) return;
-    const editor = activeTextEditor.value;
-    editor.setDecorations(
-      regionStartLineDecoration,
-      regionDecorationRanges.value.map((range) => range.line)
-    );
-  }
+  useActiveEditorDecorations(
+    {
+      isWholeLine: true,
+      backgroundColor: firstLineColor.value,
+      overviewRulerColor: firstLineColor.value,
+      overviewRulerLane: OverviewRulerLane.Full,
+    },
+    () => regionDecorationRanges.value.map((range) => range.line)
+  );
 
-  function updateRegionBlockDecorations() {
-    if (!activeTextEditor.value) return;
-    const editor = activeTextEditor.value;
-    const editorSelection = useTextEditorSelection(editor);
-    editor.setDecorations(
-      regionBlockDecoration,
-      regionDecorationRanges.value.map((range) => range.block).filter((range) => range.contains(editorSelection.value))
-    );
-  }
+  useActiveEditorDecorations(
+    {
+      isWholeLine: true,
+      backgroundColor: blockColor.value,
+      overviewRulerColor: blockColor.value,
+      overviewRulerLane: OverviewRulerLane.Full,
+    },
+    () => {
+      return regionDecorationRanges.value
+        .map((range) => range.block)
+        .filter((range) => range.contains(editorSelection.value));
+    }
+  );
 
-  context.subscriptions.push(
-    languages.registerFoldingRangeProvider(
-      [
-        { language: "javascript", scheme: "file" },
-        { language: "vue", scheme: "file" },
-      ],
-      {
-        provideFoldingRanges(): ProviderResult<FoldingRange[]> {
-          return regionRangeSet.value.map(([start, end]) => new FoldingRange(start, end, FoldingRangeKind.Region));
-        },
-      }
-    )
+  useFoldingRangeProvider(
+    [
+      { language: "javascript", scheme: "file" },
+      { language: "vue", scheme: "file" },
+    ],
+    () => regionRangeSet.value.map(([start, end]) => new FoldingRange(start, end, FoldingRangeKind.Region))
   );
 
   useCommand("region-plus.jump", (range: Range) => {
@@ -175,8 +166,6 @@ export = defineExtension((context) => {
   context.subscriptions.push(window.registerTreeDataProvider("region-block", treeDataProvider));
 
   watchEffect(() => {
-    updateRegionStartLineDecorations();
-    updateRegionBlockDecorations();
     treeDataProvider.refresh();
 
     clearDiagnostics();
@@ -195,4 +184,12 @@ export = defineExtension((context) => {
       }
     });
   });
+
+  context.subscriptions.push(
+    workspace.onDidChangeTextDocument((event) => {
+      if (event.document === activeTextEditor.value?.document) {
+        activeDocument.value = event.document;
+      }
+    })
+  );
 });
