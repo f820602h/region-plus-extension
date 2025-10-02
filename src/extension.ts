@@ -88,29 +88,27 @@ export = defineExtension((context) => {
     });
   });
 
-  const { update: updateFirstLineDecorations } = useActiveEditorDecorations(
-    {
-      isWholeLine: true,
-      backgroundColor: firstLineColor.value,
-      overviewRulerColor: firstLineColor.value,
-      overviewRulerLane: OverviewRulerLane.Full,
-    },
-    () => regionDecorationRanges.value.map((range) => range.line)
+  const firstLineDecoration = computed(() => ({
+    isWholeLine: true,
+    backgroundColor: firstLineColor.value,
+    overviewRulerColor: firstLineColor.value,
+    overviewRulerLane: OverviewRulerLane.Full,
+  }));
+  const { update: updateFirstLineDecorations } = useActiveEditorDecorations(firstLineDecoration, () =>
+    regionDecorationRanges.value.map((range) => range.line)
   );
 
-  const { update: updateBlockDecorations } = useActiveEditorDecorations(
-    {
-      isWholeLine: true,
-      backgroundColor: blockColor.value,
-      overviewRulerColor: blockColor.value,
-      overviewRulerLane: OverviewRulerLane.Full,
-    },
-    () => {
-      return regionDecorationRanges.value
-        .map((range) => range.block)
-        .filter((range) => range.contains(editorSelection.value));
-    }
-  );
+  const blockDecoration = computed(() => ({
+    isWholeLine: true,
+    backgroundColor: blockColor.value,
+    overviewRulerColor: blockColor.value,
+    overviewRulerLane: OverviewRulerLane.Full,
+  }));
+  const { update: updateBlockDecorations } = useActiveEditorDecorations(blockDecoration, () => {
+    return regionDecorationRanges.value
+      .map((range) => range.block)
+      .filter((range) => range.contains(editorSelection.value));
+  });
 
   useFoldingRangeProvider(
     [
@@ -196,12 +194,6 @@ export = defineExtension((context) => {
         activeDocument.value = event.document;
         update();
       }
-    })
-  );
-
-  context.subscriptions.push(
-    workspace.onDidChangeConfiguration((event) => {
-      update();
     })
   );
 
