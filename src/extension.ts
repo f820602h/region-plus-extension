@@ -49,14 +49,15 @@ export = defineExtension((context) => {
 
   const activeTextEditor = useActiveTextEditor();
   const activeDocument = ref(activeTextEditor.value?.document);
-  const textDocument = useDocumentText(activeDocument);
   const editorSelection = useTextEditorSelection(activeTextEditor);
 
   const regionStartLines = computed<number[]>(() => {
+    const textDocument = useDocumentText(activeDocument.value);
     if (!textDocument.value) return [];
     return getTextLine(textDocument.value, new RegExp(/\/\/\s*#region/, "g"));
   });
   const regionEndLines = computed<number[]>(() => {
+    const textDocument = useDocumentText(activeDocument.value);
     if (!textDocument.value) return [];
     return getTextLine(textDocument.value, new RegExp(/\/\/\s*#endregion/, "g"));
   });
@@ -65,8 +66,10 @@ export = defineExtension((context) => {
     if (!regionStartLines.value.length || !regionEndLines.value.length) return [];
     const cloneStartLines = [...regionStartLines.value];
     return regionEndLines.value.reduce<number[][]>((acc, end) => {
-      const start = cloneStartLines[[...cloneStartLines, end].sort((a, b) => a - b).indexOf(end) - 1];
-      cloneStartLines.splice(start, 1);
+      if (!cloneStartLines.length) return acc;
+      const targetIndex = [...cloneStartLines, end].sort((a, b) => a - b).indexOf(end) - 1;
+      const start = cloneStartLines[targetIndex];
+      cloneStartLines.splice(targetIndex, 1);
       acc.push([start, end]);
       return acc;
     }, []);
@@ -172,6 +175,7 @@ export = defineExtension((context) => {
 
     if (!activeTextEditor.value) return;
     const editor = activeTextEditor.value;
+
     regionStartLines.value.forEach((line) => {
       if (!regionRangeSet.value.some(([s]) => s === line)) {
         const startLine = editor.document?.lineAt?.(line);
@@ -192,6 +196,12 @@ export = defineExtension((context) => {
         activeDocument.value = event.document;
         update();
       }
+    })
+  );
+
+  context.subscriptions.push(
+    workspace.onDidChangeConfiguration((event) => {
+      update();
     })
   );
 
