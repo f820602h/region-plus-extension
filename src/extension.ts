@@ -113,9 +113,26 @@ export = defineExtension((context) => {
   useFoldingRangeProvider(
     [
       { language: "javascript", scheme: "file" },
+      { language: "javascriptreact", scheme: "file" },
+      { language: "typescript", scheme: "file" },
+      { language: "typescriptreact", scheme: "file" },
       { language: "vue", scheme: "file" },
+      { language: "svelte", scheme: "file" },
+      // { language: "python", scheme: "file" },
+      { language: "java", scheme: "file" },
+      { language: "csharp", scheme: "file" },
+      { language: "c", scheme: "file" },
+      { language: "go", scheme: "file" },
+      { language: "rust", scheme: "file" },
+      { language: "php", scheme: "file" },
+      // { language: "ruby", scheme: "file" },
     ],
-    () => regionRangeSet.value.map(([start, end]) => new FoldingRange(start, end, FoldingRangeKind.Region))
+    () => {
+      if (!regionRangeSet.value || !Array.isArray(regionRangeSet.value)) {
+        return [];
+      }
+      return regionRangeSet.value.map(([start, end]) => new FoldingRange(start, end, FoldingRangeKind.Region));
+    }
   );
 
   useCommand("region-plus.jump", (range: Range) => {
@@ -163,7 +180,7 @@ export = defineExtension((context) => {
   }
 
   const treeDataProvider = new MyTreeDataProvider();
-  context.subscriptions.push(window.registerTreeDataProvider("region-block", treeDataProvider));
+  context.subscriptions.push(window.registerTreeDataProvider("region-plus", treeDataProvider));
 
   function update() {
     clearDiagnostics();
