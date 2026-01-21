@@ -2,9 +2,9 @@
   "publisher": "MaxLeeBK",
   "name": "region-plus",
   "displayName": "Region Plus",
-  "description": "Enhanced code region management with visual highlighting, smart navigation, and folding for JavaScript and Vue.js development.",
+  "description": "Enhanced code region management with visual highlighting, smart navigation, and folding.",
   "type": "module",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "license": "MIT",
   "repository": "github:f820602h/region-plus-extension",
   "categories": [

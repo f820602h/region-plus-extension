@@ -29,13 +29,12 @@ import { registerDiagnostics, updateDiagnostics, clearDiagnostics } from "./diag
 
 function getTextLine(fullText: string, regex: RegExp): number[] {
   const result: number[] = [];
-  let match;
-  while ((match = regex.exec(fullText))) {
-    const startIndex = match.index!;
-    const linesBefore = fullText.substring(0, startIndex).split("\n");
-    result.push(linesBefore.length - 1);
-  }
-
+  const lines = fullText.split("\n");
+  lines.forEach((line, index) => {
+    if (regex.test(line)) {
+      result.push(index);
+    }
+  });
   return result;
 }
 
@@ -54,12 +53,12 @@ export = defineExtension((context) => {
   const regionStartLines = computed<number[]>(() => {
     const textDocument = useDocumentText(activeDocument.value);
     if (!textDocument.value) return [];
-    return getTextLine(textDocument.value, new RegExp(/\/\/\s*#region/, "g"));
+    return getTextLine(textDocument.value, /^\s*\/\/\s*#region/);
   });
   const regionEndLines = computed<number[]>(() => {
     const textDocument = useDocumentText(activeDocument.value);
     if (!textDocument.value) return [];
-    return getTextLine(textDocument.value, new RegExp(/\/\/\s*#endregion/, "g"));
+    return getTextLine(textDocument.value, /^\s*\/\/\s*#endregion/);
   });
 
   const regionRangeSet = computed(() => {
@@ -110,24 +109,7 @@ export = defineExtension((context) => {
       .filter((range) => range.contains(editorSelection.value));
   });
 
-  useFoldingRangeProvider(
-    [
-      { language: "javascript", scheme: "file" },
-      { language: "javascriptreact", scheme: "file" },
-      { language: "typescript", scheme: "file" },
-      { language: "typescriptreact", scheme: "file" },
-      { language: "vue", scheme: "file" },
-      { language: "svelte", scheme: "file" },
-      // { language: "python", scheme: "file" },
-      { language: "java", scheme: "file" },
-      { language: "csharp", scheme: "file" },
-      { language: "c", scheme: "file" },
-      { language: "go", scheme: "file" },
-      { language: "rust", scheme: "file" },
-      { language: "php", scheme: "file" },
-      // { language: "ruby", scheme: "file" },
-    ],
-    () => {
+  useFoldingRangeProvider([{ scheme: "file" }], () => {
       if (!regionRangeSet.value || !Array.isArray(regionRangeSet.value)) {
         return [];
       }
